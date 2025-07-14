@@ -1,5 +1,5 @@
 import pytest
-import requests
+import psycopg2
 from requests_mock import Mocker
 from src import scrap_remoteok
 
@@ -21,3 +21,17 @@ def remoteok_mock():
     with Mocker() as m:
         m.get(scrap_remoteok.url, json=[{"legal": "don't abuse"}, SAMPLE_JOB])
         yield
+
+
+@pytest.fixture(scope="function")
+def pg_conn():
+    conn = psycopg2.connect(
+        dbname="testdb",
+        user="testuser",
+        password="testpass",
+        host="localhost",
+        port=5433,  # cuidado com o número!
+    )
+    yield conn
+    conn.rollback()  # desfaz tudo pra manter isolado
+    conn.close()
